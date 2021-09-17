@@ -37,9 +37,6 @@ public final class Main {
   /** list to hold star data */
   private List<Star> listOfStars = null;
 
-  /** filename */
-  private String filename;
-
   /**
    * The initial method called when execution begins.
    *
@@ -92,23 +89,19 @@ public final class Main {
                   Double.parseDouble(arguments[2]));
             System.out.println(difference);
           } else if (arguments[0].equals("stars")) {
-            filename = arguments[1];
-            listOfStars = loadStarInfo(filename);
+            listOfStars = loadStarInfo(arguments[1]);
+            System.out.println("Read " + listOfStars.size() + " stars from " + arguments[1]);
           } else if (arguments[0].equals("naive_neighbors")) {
             if (listOfStars == null) {
               System.out.println("ERROR: Load in star data first");
             }
 
             if (arguments.length == 5) {
-              System.out.println("Read " + listOfStars.size() + " stars from " + filename);
-
               naiveNeighbors(Integer.parseInt(arguments[1]),
                   Float.parseFloat(arguments[2]),
                   Float.parseFloat(arguments[3]),
                   Float.parseFloat(arguments[4]));
             } else if (arguments.length == 3) {
-              System.out.println("Read " + listOfStars.size() + " stars from " + filename);
-
               String name = arguments[2];
               if (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
                 naiveNeighbors(Integer.parseInt(arguments[1]),
@@ -119,7 +112,7 @@ public final class Main {
             }
           }
         } catch (Exception e) {
-          // e.printStackTrace();
+          e.printStackTrace();
           System.out.println("ERROR: We couldn't process your input");
         }
       }
@@ -187,6 +180,13 @@ public final class Main {
    * @return list of stars
    */
   private void naiveNeighbors(int k, float x, float y, float z) {
+    if (listOfStars.size() <= k) {
+      for (Star star : listOfStars) {
+        System.out.println(star.getStarID());
+      }
+      return;
+    }
+
     Map<Float, List<Star>> distanceToStar = new TreeMap<>();
 
     for (Star star : this.listOfStars) {
@@ -208,7 +208,7 @@ public final class Main {
       for (float distance : distanceToStar.keySet()) {
         List<Star> stars = distanceToStar.get(distance);
 
-        if (k <= (returnList.size() + stars.size())) {
+        if (k >= (returnList.size() + stars.size())) {
           returnList.addAll(stars);
         } else {
           List<Star> listCopy = new ArrayList<>(stars);
