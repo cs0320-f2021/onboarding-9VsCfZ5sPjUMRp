@@ -123,18 +123,26 @@ public final class Main {
 
   }
 
+  /**
+   * Method to read CSV and load star info into a list of stars
+   * @param filename
+   * @return List of stars
+   * @throws Exception
+   */
   private static List<Star> loadStarInfo(String filename) throws Exception {
     List<Star> returnList = new ArrayList<>();
 
     BufferedReader reader = new BufferedReader(new FileReader(filename));
     String line = reader.readLine();
 
+    // make sure first line is a header
     if (!validateHeader(line)) {
       throw new Exception("Invalid header; needs to have StarID, ProperName, X, Y, Z.");
     }
 
     line = reader.readLine();
 
+    // create stars out of lines and add to returnList
     while (line != null) {
       returnList.add(createStar(line));
       line = reader.readLine();
@@ -144,17 +152,30 @@ public final class Main {
     return returnList;
   }
 
+  /**
+   * Method to determine if a line is a valid header or not
+   * @param header String
+   * @return boolean
+   */
   private static boolean validateHeader(String header) {
     String[] headerComponents = header.split(",");
 
+    // checks if header is correct length and has correct components
     return headerComponents.length == 5 && headerComponents[0].equals("StarID") &&
         headerComponents[1].equals("ProperName") && headerComponents[2].equals("X") &&
         headerComponents[3].equals("Y") && headerComponents[4].equals("Z");
   }
 
+  /**
+   * Method to create a star from a line
+   * @param line String
+   * @return Star
+   * @throws Exception
+   */
   private static Star createStar(String line) throws Exception {
     String[] lineComponents = line.split(",");
 
+    // checks if line has the correct number of components for a star
     if (lineComponents.length != 5) {
       throw new Exception("Incorrect number of inputs for star: " + line);
     }
@@ -180,6 +201,7 @@ public final class Main {
    * @return list of stars
    */
   private void naiveNeighbors(int k, float x, float y, float z) {
+    // if there are fewer stars than the number of stars to return, print out all the star IDs
     if (listOfStars.size() <= k) {
       for (Star star : listOfStars) {
         System.out.println(star.getStarID());
@@ -187,8 +209,11 @@ public final class Main {
       return;
     }
 
+    // create a TreeMap to hold distance to list of stars
     Map<Float, List<Star>> distanceToStar = new TreeMap<>();
 
+    // loop through stars, calculate distance from the coordinates, add into TreeMap with key
+    // distance and value list of stars
     for (Star star : this.listOfStars) {
       float distance = star.calculateStarDistanceCoord(x, y, z);
 
@@ -204,17 +229,25 @@ public final class Main {
 
     List<Star> returnList = new ArrayList<>();
 
+    // while loop to add k stars to returnList
     while (returnList.size() < k) {
+      // iterate through keys (which are sorted since it's in a TreeMap)
       for (float distance : distanceToStar.keySet()) {
         List<Star> stars = distanceToStar.get(distance);
 
+        // if adding all stars in list makes returnList's new size less than or equal to k,
+        // add all stars in the list
         if (k >= (returnList.size() + stars.size())) {
           returnList.addAll(stars);
         } else {
           List<Star> listCopy = new ArrayList<>(stars);
           int size = returnList.size();
+          // if adding all the stars in this list makes returnList exceed k, find number of stars
+          // that need to be added for returnList to equal k
           int neededStars = k - size;
 
+          // get random stars from list, then delete star from copy and repeat until you get
+          // neededStars
           for (int i = 0; i < neededStars; i++) {
             Random rand = new Random();
 
@@ -226,6 +259,7 @@ public final class Main {
       }
     }
 
+    // print out the star IDs for each star in returnList
     for (Star star : returnList) {
       System.out.println(star.getStarID());
     }
