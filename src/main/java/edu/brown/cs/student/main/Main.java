@@ -97,15 +97,27 @@ public final class Main {
             }
 
             if (arguments.length == 5) {
-              naiveNeighbors(Integer.parseInt(arguments[1]),
+              List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
                   Float.parseFloat(arguments[2]),
                   Float.parseFloat(arguments[3]),
                   Float.parseFloat(arguments[4]));
+
+              for (Star star : list) {
+                System.out.println(star.getStarID());
+              }
             } else if (arguments.length == 3) {
               String name = arguments[2];
               if (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
-                naiveNeighbors(Integer.parseInt(arguments[1]),
+                List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
                     name.substring(1, name.length() - 1));
+
+                if (list != null) {
+                  for (Star star : list) {
+                    System.out.println(star.getStarID());
+                  }
+                } else {
+                  System.out.println("ERROR: Star with name " + name + " does not exist in the database");
+                }
               } else {
                 System.out.println("ERROR: Name must have quotations around it");
               }
@@ -200,13 +212,10 @@ public final class Main {
    * @param z z coordinate
    * @return list of stars
    */
-  private void naiveNeighbors(int k, float x, float y, float z) {
-    // if there are fewer stars than the number of stars to return, print out all the star IDs
+  private List<Star> naiveNeighbors(int k, float x, float y, float z) {
+    // if there are fewer stars than the number of stars to return, return all the stars
     if (listOfStars.size() <= k) {
-      for (Star star : listOfStars) {
-        System.out.println(star.getStarID());
-      }
-      return;
+      return listOfStars;
     }
 
     // create a TreeMap to hold distance to list of stars
@@ -259,10 +268,7 @@ public final class Main {
       }
     }
 
-    // print out the star IDs for each star in returnList
-    for (Star star : returnList) {
-      System.out.println(star.getStarID());
-    }
+    return returnList;
   }
 
   /**
@@ -271,18 +277,23 @@ public final class Main {
    * @param starName given star name
    * @return list of stars
    */
-  private void naiveNeighbors(int k, String starName) {
+  private List<Star> naiveNeighbors(int k, String starName) {
     Star inputStar = null;
+
+    // find the star with starName in listOfStars
     for (Star star : listOfStars) {
       if (star.getProperName().equals(starName)) {
         inputStar = star;
       }
     }
 
+
     if (inputStar != null) {
-      naiveNeighbors(k, inputStar.getX(), inputStar.getY(), inputStar.getZ());
+      List<Star> list = naiveNeighbors(k + 1, inputStar.getX(), inputStar.getY(), inputStar.getZ());
+      list.remove(0);
+      return list;
     } else {
-      System.out.println("The star with name " + starName + " does not exist in the data");
+      return null;
     }
   }
 
