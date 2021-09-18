@@ -68,7 +68,6 @@ public final class Main {
       runSparkServer((int) options.valueOf("port"));
     }
 
-    //  Add your REPL here!
     try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
       String input;
       while ((input = br.readLine()) != null) {
@@ -78,20 +77,22 @@ public final class Main {
           // declare new MathBot
           MathBot mathBot = new MathBot();
 
-
           if (arguments[0].equals("add")) {
             // if first argument is "add," use mathbot to add the next 2 arguments
             double sum =
                   mathBot.add(Double.parseDouble(arguments[1]), Double.parseDouble(arguments[2]));
+
             System.out.println(sum);
           } else if (arguments[0].equals("subtract")) {
             // if first argument is "subtract," use mathbot to subtract the next 2 arguments
             double difference = mathBot.subtract(Double.parseDouble(arguments[1]),
                   Double.parseDouble(arguments[2]));
+
             System.out.println(difference);
           } else if (arguments[0].equals("stars")) {
             // if first argument is "stars," use loadStarInfo to read csv file into list
             listOfStars = loadStarInfo(arguments[1]);
+
             System.out.println("Read " + listOfStars.size() + " stars from " + arguments[1]);
           } else if (arguments[0].equals("naive_neighbors")) {
             // if there hasn't been any file read in, print error
@@ -112,6 +113,7 @@ public final class Main {
               // if arguments length is 3, check that name has quotations and then get the
               // name out
               String name = arguments[2];
+
               if (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
                 // get the name from the quotations and call naiveNeighbors
                 List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
@@ -134,12 +136,12 @@ public final class Main {
             System.out.println("ERROR: We couldn't process your input");
           }
         } catch (Exception e) {
-          e.printStackTrace();
+//          e.printStackTrace();
           System.out.println("ERROR: We couldn't process your input");
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+//      e.printStackTrace();
       System.out.println("ERROR: Invalid input for REPL");
     }
 
@@ -297,7 +299,8 @@ public final class Main {
       }
     }
 
-
+    // if there is a star with given name, call the other naiveNeighbors with star coordinates,
+    // get k + 1 stars, and remove the first one (since this is just the input star)
     if (inputStar != null) {
       List<Star> list = naiveNeighbors(k + 1, inputStar.getX(), inputStar.getY(), inputStar.getZ());
       list.remove(0);
