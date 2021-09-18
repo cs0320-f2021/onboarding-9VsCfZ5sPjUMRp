@@ -78,39 +78,46 @@ public final class Main {
           // declare new MathBot
           MathBot mathBot = new MathBot();
 
-          // parse the 2nd and 3rd values in argument into Doubles, if first is "add" or "subtract,"
-          // do the appropriate operation with MathBot and print result
+
           if (arguments[0].equals("add")) {
+            // if first argument is "add," use mathbot to add the next 2 arguments
             double sum =
                   mathBot.add(Double.parseDouble(arguments[1]), Double.parseDouble(arguments[2]));
             System.out.println(sum);
           } else if (arguments[0].equals("subtract")) {
+            // if first argument is "subtract," use mathbot to subtract the next 2 arguments
             double difference = mathBot.subtract(Double.parseDouble(arguments[1]),
                   Double.parseDouble(arguments[2]));
             System.out.println(difference);
           } else if (arguments[0].equals("stars")) {
+            // if first argument is "stars," use loadStarInfo to read csv file into list
             listOfStars = loadStarInfo(arguments[1]);
             System.out.println("Read " + listOfStars.size() + " stars from " + arguments[1]);
           } else if (arguments[0].equals("naive_neighbors")) {
+            // if there hasn't been any file read in, print error
             if (listOfStars == null) {
               System.out.println("ERROR: Load in star data first");
-            }
-
-            if (arguments.length == 5) {
+            } else if (arguments.length == 5) {
+              // if arguments length is 5, then use the naiveNeighbors with 4 arguments
               List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
                   Float.parseFloat(arguments[2]),
                   Float.parseFloat(arguments[3]),
                   Float.parseFloat(arguments[4]));
 
+              // print out star IDs
               for (Star star : list) {
                 System.out.println(star.getStarID());
               }
             } else if (arguments.length == 3) {
+              // if arguments length is 3, check that name has quotations and then get the
+              // name out
               String name = arguments[2];
               if (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
+                // get the name from the quotations and call naiveNeighbors
                 List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
                     name.substring(1, name.length() - 1));
 
+                // print out star IDs if list is null, otherwise star does not exist in database
                 if (list != null) {
                   for (Star star : list) {
                     System.out.println(star.getStarID());
@@ -122,6 +129,9 @@ public final class Main {
                 System.out.println("ERROR: Name must have quotations around it");
               }
             }
+          } else {
+            // invalid input
+            System.out.println("ERROR: We couldn't process your input");
           }
         } catch (Exception e) {
           e.printStackTrace();
