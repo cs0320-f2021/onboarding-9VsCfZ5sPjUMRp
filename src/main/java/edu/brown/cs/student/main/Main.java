@@ -34,8 +34,6 @@ public final class Main {
   // use port 4567 by default when running server
   private static final int DEFAULT_PORT = 4567;
 
-  /** list to hold star data */
-  private List<Star> listOfStars = null;
 
   /**
    * The initial method called when execution begins.
@@ -69,6 +67,9 @@ public final class Main {
     }
 
     try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+      // create new StarHandler
+      StarHandler starHandler = new StarHandler();
+
       String input;
       while ((input = br.readLine()) != null) {
         try {
@@ -91,16 +92,11 @@ public final class Main {
             System.out.println(difference);
           } else if (arguments[0].equals("stars")) {
             // if first argument is "stars," use loadStarInfo to read csv file into list
-            listOfStars = loadStarInfo(arguments[1]);
-
-            System.out.println("Read " + listOfStars.size() + " stars from " + arguments[1]);
+            starHandler.loadStarInfo(arguments[1]);
           } else if (arguments[0].equals("naive_neighbors")) {
-            // if there hasn't been any file read in, print error
-            if (listOfStars == null) {
-              System.out.println("ERROR: Load in star data first");
-            } else if (arguments.length == 5) {
+            if (arguments.length == 5) {
               // if arguments length is 5, then use the naiveNeighbors with 4 arguments
-              List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
+              List<Star> list = starHandler.naiveNeighbors(Integer.parseInt(arguments[1]),
                   Float.parseFloat(arguments[2]),
                   Float.parseFloat(arguments[3]),
                   Float.parseFloat(arguments[4]));
@@ -116,7 +112,7 @@ public final class Main {
 
               if (name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
                 // get the name from the quotations and call naiveNeighbors
-                List<Star> list = naiveNeighbors(Integer.parseInt(arguments[1]),
+                List<Star> list = starHandler.naiveNeighbors(Integer.parseInt(arguments[1]),
                     name.substring(1, name.length() - 1));
 
                 // print out star IDs if list is null, otherwise star does not exist in database
@@ -147,168 +143,6 @@ public final class Main {
 
   }
 
-  /**
-   * Method to read CSV and load star info into a list of stars
-   * @param filename
-   * @return List of stars
-   * @throws Exception
-   */
-  private static List<Star> loadStarInfo(String filename) throws Exception {
-    List<Star> returnList = new ArrayList<>();
-
-    BufferedReader reader = new BufferedReader(new FileReader(filename));
-    String line = reader.readLine();
-
-    // make sure first line is a header
-    if (!validateHeader(line)) {
-      throw new Exception("Invalid header; needs to have StarID, ProperName, X, Y, Z.");
-    }
-
-    line = reader.readLine();
-
-    // create stars out of lines and add to returnList
-    while (line != null) {
-      returnList.add(createStar(line));
-      line = reader.readLine();
-    }
-    reader.close();
-
-    return returnList;
-  }
-
-  /**
-   * Method to determine if a line is a valid header or not
-   * @param header String
-   * @return boolean
-   */
-  private static boolean validateHeader(String header) {
-    String[] headerComponents = header.split(",");
-
-    // checks if header is correct length and has correct components
-    return headerComponents.length == 5 && headerComponents[0].equals("StarID") &&
-        headerComponents[1].equals("ProperName") && headerComponents[2].equals("X") &&
-        headerComponents[3].equals("Y") && headerComponents[4].equals("Z");
-  }
-
-  /**
-   * Method to create a star from a line
-   * @param line String
-   * @return Star
-   * @throws Exception
-   */
-  private static Star createStar(String line) throws Exception {
-    String[] lineComponents = line.split(",");
-
-    // checks if line has the correct number of components for a star
-    if (lineComponents.length != 5) {
-      throw new Exception("Incorrect number of inputs for star: " + line);
-    }
-
-    Star star = null;
-    try {
-      star = new Star(Integer.parseInt(lineComponents[0]), lineComponents[1],
-          Float.parseFloat(lineComponents[2]), Float.parseFloat(lineComponents[3]),
-          Float.parseFloat(lineComponents[4]));
-    } catch (Exception e) {
-      throw new Exception("Incorrect format: " + line);
-    }
-
-    return star;
-  }
-
-  /**
-   * method that returns list of closest stars to given coordinates
-   * @param k number of stars to return
-   * @param x x coordinate
-   * @param y y coordinate
-   * @param z z coordinate
-   * @return list of stars
-   */
-  private List<Star> naiveNeighbors(int k, float x, float y, float z) {
-    // if there are fewer stars than the number of stars to return, return all the stars
-    if (listOfStars.size() <= k) {
-      return listOfStars;
-    }
-
-    // create a TreeMap to hold distance to list of stars
-    Map<Float, List<Star>> distanceToStar = new TreeMap<>();
-
-    // loop through stars, calculate distance from the coordinates, add into TreeMap with key
-    // distance and value list of stars
-    for (Star star : this.listOfStars) {
-      float distance = star.calculateStarDistanceCoord(x, y, z);
-
-      if (distanceToStar.containsKey(distance)) {
-        List<Star> list = distanceToStar.get(distance);
-        list.add(star);
-      } else {
-        List<Star> list = new ArrayList<>();
-        list.add(star);
-        distanceToStar.put(distance, list);
-      }
-    }
-
-    List<Star> returnList = new ArrayList<>();
-
-    // while loop to add k stars to returnList
-    while (returnList.size() < k) {
-      // iterate through keys (which are sorted since it's in a TreeMap)
-      for (float distance : distanceToStar.keySet()) {
-        List<Star> stars = distanceToStar.get(distance);
-
-        // if adding all stars in list makes returnList's new size less than or equal to k,
-        // add all stars in the list
-        if (k >= (returnList.size() + stars.size())) {
-          returnList.addAll(stars);
-        } else {
-          List<Star> listCopy = new ArrayList<>(stars);
-          int size = returnList.size();
-          // if adding all the stars in this list makes returnList exceed k, find number of stars
-          // that need to be added for returnList to equal k
-          int neededStars = k - size;
-
-          // get random stars from list, then delete star from copy and repeat until you get
-          // neededStars
-          for (int i = 0; i < neededStars; i++) {
-            Random rand = new Random();
-
-            int randIndex = rand.nextInt(listCopy.size());
-            returnList.add(listCopy.get(randIndex));
-            listCopy.remove(randIndex);
-          }
-        }
-      }
-    }
-
-    return returnList;
-  }
-
-  /**
-   * method that returns list of length k of closest stars to given star
-   * @param k number of stars to return
-   * @param starName given star name
-   * @return list of stars
-   */
-  private List<Star> naiveNeighbors(int k, String starName) {
-    Star inputStar = null;
-
-    // find the star with starName in listOfStars
-    for (Star star : listOfStars) {
-      if (star.getProperName().equals(starName)) {
-        inputStar = star;
-      }
-    }
-
-    // if there is a star with given name, call the other naiveNeighbors with star coordinates,
-    // get k + 1 stars, and remove the first one (since this is just the input star)
-    if (inputStar != null) {
-      List<Star> list = naiveNeighbors(k + 1, inputStar.getX(), inputStar.getY(), inputStar.getZ());
-      list.remove(0);
-      return list;
-    } else {
-      return null;
-    }
-  }
 
   private static FreeMarkerEngine createEngine() {
     Configuration config = new Configuration(Configuration.VERSION_2_3_0);
@@ -376,90 +210,6 @@ public final class Main {
           "Go go GUI");
 
       return new ModelAndView(variables, "main.ftl");
-    }
-  }
-
-  /**
-   * A helper class to store star information.
-   */
-  private static class Star {
-    /** StarID */
-    private final int starID;
-    /** {ProperName} */
-    private final String properName;
-    /** X coord */
-    private final float x;
-    /** Y coord */
-    private final float y;
-    /** Z coord */
-    private final float z;
-
-    /**
-     * constructor for Star
-     * @param starID
-     * @param properName
-     * @param x
-     * @param y
-     * @param z
-     */
-    protected Star(int starID, String properName, float x, float y, float z) {
-      this.starID = starID;
-      this.properName = properName;
-      this.x = x;
-      this.y = y;
-      this.z = z;
-    }
-
-    /**
-     * getter for properName
-     * @return name
-     */
-    public String getProperName() {
-      return properName;
-    }
-
-    /**
-     * getter for starID
-     * @return id
-     */
-    public int getStarID() {
-      return starID;
-    }
-
-    /**
-     * getter for x coordinate
-     * @return x
-     */
-    public float getX() {
-      return x;
-    }
-
-    /**
-     * getter for y coordinate
-     * @return y
-     */
-    public float getY() {
-      return y;
-    }
-
-    /**
-     * getter for z coordinate
-     * @return z
-     */
-    public float getZ() {
-      return z;
-    }
-
-    /**
-     * Method to calculate Euclidean distance between star and given coordinates
-     * @param xCoord - x coordinate
-     * @param yCoord - y coordinate
-     * @param zCoord - z coordinate
-     * @return float, euclidean distance between this star and the coordinates
-     */
-    public float calculateStarDistanceCoord(float xCoord, float yCoord, float zCoord) {
-      return (float) Math.sqrt((xCoord - this.x) * (xCoord - this.x)
-          + (yCoord - this.y) * (yCoord - this.y) + (zCoord - this.z) * (zCoord - this.z));
     }
   }
 }
