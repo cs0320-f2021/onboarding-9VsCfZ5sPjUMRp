@@ -8,7 +8,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-public class StarHandler {
+/**
+ * class that handles all of the operations with Stars
+ */
+class StarHandler {
   /** list to hold star data */
   private List<Star> listOfStars = null;
 
@@ -17,7 +20,11 @@ public class StarHandler {
    * @return int
    */
   public int getNumListOfStars() {
-    return listOfStars.size();
+    if (listOfStars == null) {
+      return 0;
+    } else {
+      return listOfStars.size();
+    }
   }
 
   /**
@@ -75,7 +82,9 @@ public class StarHandler {
 
     // checks if line has the correct number of components for a star
     if (lineComponents.length != 5) {
-      throw new Exception("Incorrect number of inputs for star: " + line);
+      String message = "Incorrect number of inputs for star: " + line;
+      System.out.println("ERROR: " + message);
+      throw new Exception(message);
     }
 
     Star star = null;
@@ -84,7 +93,9 @@ public class StarHandler {
           Float.parseFloat(lineComponents[2]), Float.parseFloat(lineComponents[3]),
           Float.parseFloat(lineComponents[4]));
     } catch (Exception e) {
-      throw new Exception("Incorrect format: " + line);
+      String message = "Incorrect format: " + line;
+      System.out.println("ERROR: " + message);
+      throw new Exception(message);
     }
 
     return star;

@@ -1,6 +1,9 @@
 package edu.brown.cs.student.main;
 
-public class Star {
+/**
+ * class for Star
+ */
+class Star {
   /** StarID */
   private final int starID;
   /** {ProperName} */
