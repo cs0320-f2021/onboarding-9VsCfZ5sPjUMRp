@@ -107,23 +107,4 @@ public class StarHandlerTest {
 
     assertEquals(message, exception.getMessage());
   }
-
-  @Test
-  public void testKNNCoordValid() {
-    StarHandler starHandler1 = new StarHandler();
-    try {
-      starHandler1.loadStarInfo("data/stars/ten-star.csv");
-    } catch (Exception e) {
-      System.out.println("ERROR");
-    }
-
-    List<Star> list = starHandler1.naiveNeighbors(5, 0, 0, 0);
-    List<Star> listActual = new ArrayList<>(Arrays.asList(70667
-        71454
-        71457
-        87666));
-
-    listActual.addAll()
-
-  }
 }
